@@ -10,6 +10,7 @@
 
 # We are adding libraries, they will be in our local node_modules
 npm install
+npm run build
 #npm install express
 #npm install pg
 
