@@ -1,8 +1,6 @@
-// https://www.freecodecamp.org/news/express-explained-with-examples-installation-routing-middleware-and-more/
-// https://medium.com/@viral_shah/express-middlewares-demystified-f0c2c37ea6a1
-// https://www.sohamkamani.com/blog/2018/05/30/understanding-how-expressjs-works/
+var staticPort = 10000;
+var webSocketPort = staticPort+1;
 
-var port = 8000; 
 var express = require('express');
 var app = express();
 
@@ -26,6 +24,14 @@ app.use(bodyParser.json());
 
 
 app.use('/',express.static("build"));
+
+//var stage;
+//stage = new Stage(null, null, null, null);
+
+app.listen(staticPort, function () {
+	console.log('ftd server run on port:'+staticPort);
+});
+
 
 /** 
  * This is middleware to restrict access to subroutes of /api/auth/ 
@@ -202,7 +208,4 @@ app.get('/api/view/profile', function (req, res) {
 });
 
 
-app.listen(port, function () {
-  	console.log('Example app listening on port '+port);
-});
 
