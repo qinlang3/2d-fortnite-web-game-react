@@ -1,5 +1,6 @@
 var staticPort = 10000;
 var webSocketPort = staticPort+1;
+const Stage = require('./model.js');
 
 var express = require('express');
 var app = express();
@@ -32,7 +33,59 @@ app.listen(staticPort, function () {
 	console.log('ftd server run on port:'+staticPort);
 });
 
+var WebSocketServer = require('ws').Server
+   ,wss = new WebSocketServer({port: webSocketPort});
 
+wss.broadcast = function(message){
+	for(let ws of this.clients){ 
+		ws.send(message); 
+	}
+}
+
+function broadcast(){
+	//var message=stage.toString();
+	if(stage.hasChanged()){
+		wss.broadcast(JSON.stringify(stage));
+		stage.updateChanged(false);
+	}
+}
+
+var stage = new Stage();
+var interval=null;
+interval=setInterval(function(){ stage.step(); broadcast(); },20);
+
+wss.on('close', function() {
+    console.log('disconnected');
+});
+var clients=[]; for(var i=0;i<50;++i) clients[i]=0;
+function placePlayer(){
+	for(var i=0;i<clients.length;i++){
+		if(!clients[i]){
+			clients[i]=1;
+			return i;
+		}
+	}
+	return -1;
+}
+wss.on('connection', function(ws) {
+
+	var id = placePlayer();
+	stage.playerJoin(id);
+	
+
+	// send initialization msg contains id to client
+	ws.send(JSON.stringify({"init": {"id": id}}));
+
+	ws.on('message', function(message) {
+		console.log("messge from client: "+message);
+		var msg=JSON.parse(message);
+		if(msg.init_res){ // client receives initialization msg
+			ws.send(JSON.stringify(stage)); // send copy of game data to client
+			return;
+		}
+		//stage.update(message);
+	});
+});
 /** 
  * This is middleware to restrict access to subroutes of /api/auth/ 
  * To get past this middleware, all requests should be sent with appropriate
