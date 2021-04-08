@@ -10,11 +10,10 @@
 
 # We are adding libraries, they will be in our local node_modules
 npm install
-npm run build
 #npm install express
 #npm install pg
 npm install @material-ui/lab
 # check out the package.json now
 # check out node_modules
-
 psql "dbname='webdb' user='webdbuser' password='password' host='localhost'" -f db/schema.sql
+npm run build

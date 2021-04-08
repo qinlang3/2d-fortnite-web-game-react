@@ -3,8 +3,11 @@ import React from 'react';
 import Button from '@material-ui/core/Button';
 import Alert from '@material-ui/lab/Alert';
 import TextField from '@material-ui/core/TextField';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import Container from '@material-ui/core/Container';
+import Header from './components/header';
 
-import Switch from '@material-ui/core/Switch';
+
 class RegisterPage extends React.Component {
     constructor(props){
       super(props);
@@ -61,19 +64,17 @@ class RegisterPage extends React.Component {
   
     render() {
       const {app} =this.props;
-      var localTheme = window.localStorage.getItem('theme');
-      var checked = localTheme ? (localTheme === 'dark' ? true : false) : true;
         // const classes = useStyles();
         return (
-          <div>
+          <React.Fragment>
+          <CssBaseline/>
+          <Container maxWidth="xs">
+          <Header app={app} title="2D Fortnite Game" sections={null}/>
+          
             {this.state.empty_err && <Alert severity="error">All the registration field can not be empty!</Alert>}
             {this.state.password_err && <Alert severity="error">Your two password are not the same!</Alert>}
             {this.state.username_err && <Alert severity="error">This username has been used!</Alert>}
-          <Switch
-          checked={checked}
-          onChange={app.toggleTheme}
-          color="primary"
-        />
+          
           <TextField
             variant="outlined"
             margin="normal"
@@ -127,7 +128,9 @@ class RegisterPage extends React.Component {
           >
             Go back to Login Page
           </Button>
-          </div>
+          </Container>
+          </React.Fragment>
+
           );
 
     }

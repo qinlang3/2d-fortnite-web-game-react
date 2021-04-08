@@ -83,7 +83,10 @@ wss.on('connection', function(ws) {
 			ws.send(JSON.stringify(stage)); // send copy of game data to client
 			return;
 		}
-		//stage.update(message);
+		if(msg.gameplay){
+			stage.update(msg.gameplay.data);
+			return;
+		}
 	});
 });
 /** 

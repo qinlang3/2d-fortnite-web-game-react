@@ -130,7 +130,7 @@ export default function Header(props) {
         />
         {checked? <Brightness2Icon color="primary"></ Brightness2Icon> : 
             <Brightness2OutlinedIcon color="primary"></ Brightness2OutlinedIcon>}
-        <IconButton
+        {sections !== null ? <IconButton
             color="inherit"
             aria-label="open drawer"
             edge="end"
@@ -139,33 +139,35 @@ export default function Header(props) {
             className={clsx(open && classes.hide)}
           >
             <MenuIcon fontSize="large"/>
-          </IconButton>
+          </IconButton> : null}
       </Toolbar>
       </AppBar>
+      {sections !== null ? 
       <Drawer
-        className={classes.drawer}
-        variant="persistent"
-        anchor="right"
-        open={open}
-        classes={{
-          paper: classes.drawerPaper,
-        }}
-      >
-        <div className={classes.drawerHeader}>
-          <IconButton onClick={handleDrawerClose}>
-            {theme.direction === 'rtl' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-          </IconButton>
-        </div>
-        <Divider />
-        <List>
-          {sections.map((section) => (
-            <ListItem button selected={section.title===app.state.page ? true : false} component="a" key={section.title} onClick={() => {app.setState({page: section.title})}}>
-              <ListItemText primary={section.title} />
-            </ListItem>
-          ))}
-          
-        </List>
-      </Drawer>
+      className={classes.drawer}
+      variant="persistent"
+      anchor="right"
+      open={open}
+      classes={{
+        paper: classes.drawerPaper,
+      }}
+    >
+      <div className={classes.drawerHeader}>
+        <IconButton onClick={handleDrawerClose}>
+          {theme.direction === 'rtl' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+        </IconButton>
+      </div>
+      <Divider />
+      <List>
+        {sections.map((section) => (
+          <ListItem button selected={section.title===app.state.page ? true : false} component="a" key={section.title} onClick={() => {app.setState({page: section.title})}}>
+            <ListItemText primary={section.title} />
+          </ListItem>
+        ))}
+        
+      </List>
+    </Drawer> : null}
+      
       <Toolbar />
       
     </React.Fragment>

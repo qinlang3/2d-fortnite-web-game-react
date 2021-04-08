@@ -2,7 +2,9 @@ import React from 'react';
 import Alert from '@material-ui/lab/Alert';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
-import Switch from '@material-ui/core/Switch';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import Container from '@material-ui/core/Container';
+import Header from './components/header';
 
 // const 
 
@@ -70,17 +72,13 @@ class LoginPage extends React.Component {
 
     render() {
       const {app} =this.props;
-      var localTheme = window.localStorage.getItem('theme');
-      var checked = localTheme ? (localTheme === 'dark' ? true : false) : true;
       // const classes = useStyles();
         return (
-          <div>
+          <React.Fragment>
+          <CssBaseline/>
+          <Container maxWidth="xs">
+          <Header app={app} title="2D Fortnite Game" sections={null}/>
           {this.state.match_err && <Alert severity="error">Username and password does not match!</Alert>}
-          <Switch
-          checked={checked}
-          onChange={app.toggleTheme}
-          color="primary"
-        />
           <TextField
             variant="outlined"
             margin="normal"
@@ -124,7 +122,9 @@ class LoginPage extends React.Component {
           >
             Register
           </Button>
-          </div>
+         
+          </Container>
+            </React.Fragment>
           );
 
     }

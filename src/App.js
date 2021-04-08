@@ -49,14 +49,12 @@ class App extends React.Component {
 				
 		}else if (this.state.page === "Login" || this.state.page === "Logout"){
 			return (
-				// <div><ThemeProvider theme={theme}>
-				// <LoginPage app={this}></LoginPage></ThemeProvider></div>
-				<LoginPage app={this} username={this.state.username} password={this.state.password}></LoginPage>);
+				<div><ThemeProvider theme={theme}>
+				<LoginPage app={this} username={this.state.username} password={this.state.password}></LoginPage></ThemeProvider></div>);
 		}else if (this.state.page === "Register"){
 			return (
-				// <div><ThemeProvider theme={theme}>
-				// <RegisterPage app={this}></RegisterPage></ThemeProvider></div>
-				<RegisterPage app={this}></RegisterPage>);
+				<div><ThemeProvider theme={theme}>
+				<RegisterPage app={this}></RegisterPage></ThemeProvider></div>);
 		}
 	}
 	
