@@ -95,24 +95,20 @@ wss.on('connection', function(ws) {
  * Authorization: Basic " + btoa("arnold:spiderman"); in javascript
 **/
 app.use('/api/auth', function (req, res,next) {
-	if (!req.headers.authorization) {
-		return res.status(401).json({ error: 'No credentials sent!' });
-  	}
+	// if (!req.headers.authorization) {
+	// 	return res.status(401).json({ error: 'No credentials sent!' });
+  	// }
 	try {
-		var m = /^Basic\s+(.*)$/.exec(req.headers.authorization);
-		var user_pass = Buffer.from(m[1], 'base64').toString();
-		m = /^(.*):(.*)$/.exec(user_pass); // probably should do better than this
-		var username = m[1];
-		var password = m[2];
+		var [username,password] = [req.body["username"], req.body["password"]]
 		console.log(username+" "+password);
 		let sql = 'SELECT * FROM ftduser WHERE username=$1 and password=sha512($2)';
 		pool.query(sql, [username, password], (err, pgRes) => {
 		if (err){
 					res.status(401).json({ error: 'Not authorized'});
 		} else if(pgRes.rowCount == 1){
-			res.game_diff = pgRes.rows[0]['gamedifficulity'];
-			res.cur_user = username;
-			res.psw = password;
+			// res.game_diff = pgRes.rows[0]['gamedifficulity'];
+			// res.cur_user = username;
+			// res.psw = password;
 			next(); 
 		} else {
 					res.status(409).json({ error: 'Your username and password does not match'});
@@ -125,25 +121,26 @@ app.use('/api/auth', function (req, res,next) {
 });
 
 app.use('/api/authR', function (req, res,next) {
-	if (!req.headers.authorization) {
-		return res.status(401).json({ error: 'No credentials sent!' });
-  	}
+	// if (!req.headers.authorization) {
+	// 	return res.status(401).json({ error: 'No credentials sent!' });
+  	// }
 	try {
-		var credentialsString = Buffer.from(req.headers.authorization.split(" ")[1], 'base64').toString();
-		var lst = credentialsString.split(":");
-		var [username,password,repeatpsw, gamedifficulity] = [lst[0], lst[1], lst[2], lst[3]]
+		console.log(req.body);
+		var [username,password,repeatpsw] = [req.body["username"], req.body["password"], req.body["confirmpassword"]]
 		if (password != repeatpsw){
 			console.log("Your password are not same");
 			res.status(400).json({error: "Your password are not same"});
 			return;
 		}
 		if (username == "" || password == "" || repeatpsw == ""){
-			res.status(400).json({error: "All the registration fields can not be empty"});
+			res.status(401).json({error: "All the registration fields can not be empty"});
 			console.log("All the registration fields can not be empty");
 			return;
 		}
-		let sql = "INSERT INTO ftduser (username, password, gamedifficulity) VALUES ($1, sha512($2), $3)";
-        	pool.query(sql, [username, password, gamedifficulity], (err, pgRes) => {
+		console.log(username);
+		console.log(password);
+		let sql = "INSERT INTO ftduser (username, password) VALUES ($1, sha512($2))";
+        	pool.query(sql, [username, password], (err, pgRes) => {
   			if (err){
 				console.log(err.message);
                 res.status(409).json({ error: 'The username is already been used'});

@@ -1,17 +1,22 @@
 import logo from './logo.svg';
 import './App.css';
 import Game from './game';
+import LoginPage from './login';
+import RegisterPage from './register';
 import React from 'react';
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 
 class App extends React.Component {
 	constructor(props){
 		super(props);
+		this.state = {
+			username: "",
+			password: "",
+			page: "Login",
+			theme: window.localStorage.getItem('theme') ?  'dark': window.localStorage.getItem('theme')
+		}
 	}
-	state = {
-		page: "Game",
-		theme: window.localStorage.getItem('theme') ? window.localStorage.getItem('theme') : 'dark'
-	}
+
 	toggleTheme = () =>{
 		const localTheme = window.localStorage.getItem('theme');
 		window.localStorage.setItem('theme', localTheme ? (localTheme === 'light' ? 'dark' : 'light') : 'light');
@@ -36,13 +41,23 @@ class App extends React.Component {
 			{ title: 'Stats'},
 			{ title: 'Logout'}
 		];
-		return (
-			<div>
-			<ThemeProvider theme={theme}>
-			<Game app={this} sections={sections}></Game>
-			</ThemeProvider>
-			</div>
-		);
+		console.log(this.state.page);
+		if (this.state.page === "Game"){
+			return (
+				<div><ThemeProvider theme={theme}>
+				<Game app={this} sections={sections}></Game></ThemeProvider></div>);
+				
+		}else if (this.state.page === "Login" || this.state.page === "Logout"){
+			return (
+				// <div><ThemeProvider theme={theme}>
+				// <LoginPage app={this}></LoginPage></ThemeProvider></div>
+				<LoginPage app={this} username={this.state.username} password={this.state.password}></LoginPage>);
+		}else if (this.state.page === "Register"){
+			return (
+				// <div><ThemeProvider theme={theme}>
+				// <RegisterPage app={this}></RegisterPage></ThemeProvider></div>
+				<RegisterPage app={this}></RegisterPage>);
+		}
 	}
 	
 }
