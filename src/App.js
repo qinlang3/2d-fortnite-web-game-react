@@ -5,6 +5,7 @@ import LoginPage from './login';
 import ProfilePage from './profile';
 import RegisterPage from './register';
 import Leaderboard from './leaderboard';
+import SearchPage from './search';
 import React from 'react';
 
 
@@ -23,7 +24,7 @@ class App extends React.Component {
 	render() {
 		const sections = [
 			{ title: 'Game'},
-			{ title: 'Instruction'},
+			{ title: 'Search'},
 			{ title: 'Profile'},
 			{ title: 'Leaderboard'},
 			{ title: 'Logout'}
@@ -47,6 +48,9 @@ class App extends React.Component {
 		}else if(this.state.page === "Leaderboard"){
 			return (	
 				<Leaderboard app={this} sections={sections}></Leaderboard>);
+		}else if(this.state.page === "Search"){
+			return (
+				<SearchPage app={this} sections={sections}></SearchPage>);
 
 		}
 	}

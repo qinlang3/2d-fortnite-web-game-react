@@ -137,10 +137,11 @@ wss.on('connection', function(ws) {
  * Authorization: Basic " + btoa("arnold:spiderman"); in javascript
 **/
 app.use('/api/auth', function (req, res,next) {
-	// if (!req.headers.authorization) {
-	// 	return res.status(401).json({ error: 'No credentials sent!' });
-  	// }
 	try {
+		if (Object.keys(req.body).length != 2 || ! "username" in req.body || ! "password" in req.body ){
+			res.status(400).json({ error: 'This is a bad request'});
+			return;
+		}
 		var [username,password] = [req.body["username"], req.body["password"]]
 		console.log(username+" "+password);
 		let sql = 'SELECT * FROM ftduser WHERE username=$1 and password=sha512($2)';
@@ -148,9 +149,6 @@ app.use('/api/auth', function (req, res,next) {
 		if (err){
 					res.status(401).json({ error: 'Not authorized'});
 		} else if(pgRes.rowCount == 1){
-			// res.game_diff = pgRes.rows[0]['gamedifficulity'];
-			// res.cur_user = username;
-			// res.psw = password;
 			next(); 
 		} else {
 					res.status(409).json({ error: 'Your username and password does not match'});
@@ -163,12 +161,13 @@ app.use('/api/auth', function (req, res,next) {
 });
 
 app.use('/api/authR', function (req, res,next) {
-	// if (!req.headers.authorization) {
-	// 	return res.status(401).json({ error: 'No credentials sent!' });
-  	// }
 	try {
-		console.log(req.body);
 		var [username,password,repeatpsw] = [req.body["username"], req.body["password"], req.body["confirmpassword"]]
+		if (Object.keys(req.body).length != 3 || ! "username" in req.body || ! "password" in req.body || ! "confirmpassword" in req.body){
+			res.status(400).json({ error: 'This is a bad request'});
+			console.log("caonimaee");
+			return;
+		}
 		if (password != repeatpsw){
 			console.log("Your password are not same");
 			res.status(400).json({error: "Your password are not same"});
@@ -197,11 +196,12 @@ app.use('/api/authR', function (req, res,next) {
 
 
 app.use('/api/authU', function (req, res,next) {
-	// if (!req.headers.authorization) {
-	// 	return res.status(401).json({ error: 'No credentials sent!' });
-  	// }
 	try {
 		var [username, password,repeatpsw] = [req.body["username"], req.body["password"], req.body["confirmpassword"]]
+		if (Object.keys(req.body).length != 3 || ! "username" in req.body || ! "password" in req.body || ! "confirmpassword" in req.body){
+			res.status(400).json({ error: 'This is a bad request'});
+			return;
+		}
 		if (password != repeatpsw){
 			console.log("Your password are not same");
 			res.status(400).json({error: "Your password are not same"});
@@ -228,10 +228,11 @@ app.use('/api/authU', function (req, res,next) {
 
 
 app.use('/api/authD', function (req, res,next) {
-	// if (!req.headers.authorization) {
-	// 	return res.status(401).json({ error: 'No credentials sent!' });
-  	// }
 	try {
+		if (Object.keys(req.body).length != 1 || ! "username" in req.body ){
+			res.status(400).json({ error: 'This is a bad request'});
+			return;
+		}
 		var [username] = [req.body["username"]]
 		let sql = "DELETE FROM ftduser WHERE username=$1;";
         	pool.query(sql, [username], (err, pgRes) => {
@@ -246,6 +247,9 @@ app.use('/api/authD', function (req, res,next) {
                	res.status(401).json({ error: 'Not authorized'});
 	}
 });
+
+
+
 
 
 app.delete('/api/authD/delete', function (req, res) {
@@ -264,9 +268,30 @@ app.post('/api/authR/register', function (req, res) {
 	res.json({"message":"register success"}); 
 });
 
+
 app.post('/api/auth/login', function (req, res) {
 	res.status(200); 
 	res.json({"message":"authentication success", "user": res.cur_user, "password": res.psw, "game_diff": res.game_diff}); 
+});
+
+
+app.get('/api/view/search/:username/', function (req, res,next) {
+	try {
+		var username = req.params.username; 
+		username = username.substring(1, username.length);
+		let sql = 'SELECT * FROM ftduser WHERE username=$1';
+		pool.query(sql, [username], (err, pgRes) => {
+		if (err){
+			res.status(401).json({ error: 'Not authorized'});
+		} else if(pgRes.rowCount == 1){
+			res.status(200).json({ no_error: 'request success'}); 
+		} else if (pgRes.rowCount == 0){
+			res.status(404).json({ error: 'This username does not exist in our game'});
+		}	
+		});
+	} catch(err) {
+               	res.status(401).json({ error: 'Not authorized'});
+	}
 });
 
 // go to register page
