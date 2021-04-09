@@ -24,7 +24,7 @@ class App extends React.Component {
 	render() {
 		const sections = [
 			{ title: 'Game'},
-			{ title: 'Search'},
+			{ title: 'Leaderboard'},
 			{ title: 'Profile'},
 			{ title: 'Logout'}
 		];
@@ -44,7 +44,7 @@ class App extends React.Component {
 			return (
 			
 				<ProfilePage app={this} username={this.state.username} password={this.state.password} sections={sections}></ProfilePage>);
-		}else if(this.state.page === "Search"){
+		}else if(this.state.page === "Leaderboard"){
 			return (
 				<SearchPage app={this} sections={sections}></SearchPage>);
 
