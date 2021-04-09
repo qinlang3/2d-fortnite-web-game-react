@@ -102,7 +102,35 @@ export default function Header(props) {
   const handleDrawerClose = () => {
     setOpen(false);
   };
- 
+
+  // const getView = (app, title)  => {
+  //   console.log("what the fk");
+  //     console.log(title);
+  //   // const url = null;
+  //   if (title === 'Profile'){
+  //     url = '/api/view/profile';
+  //   }
+  //   if (title === 'Game'){
+  //     url = '/api/view/game';
+  //   }
+  //   fetch(url, {
+  //     method: "GET",
+  //     dataType: "JSON",
+  //     headers: {
+  //       "Content-Type": "application/json; charset=utf-8",
+  //     }
+  //   })
+  //   .then((resp) => {
+  //     if  (resp.status === 200){
+  //       app.setState({page: title});
+  //     }
+  //     console.log(resp.status);
+  //     return resp.json()
+  //   }) 
+  //   .catch((error) => {
+  //     console.log(error, "catch the hoop")
+  //   })
+  // };
 
   var localTheme = window.localStorage.getItem('theme');
   var checked = localTheme ? (localTheme === 'dark' ? true : false) : true;
@@ -152,6 +180,7 @@ export default function Header(props) {
         paper: classes.drawerPaper,
       }}
     >
+      {/* app.setState({page: section.title} */}
       <div className={classes.drawerHeader}>
         <IconButton onClick={handleDrawerClose}>
           {theme.direction === 'rtl' ? <ChevronLeftIcon /> : <ChevronRightIcon />}

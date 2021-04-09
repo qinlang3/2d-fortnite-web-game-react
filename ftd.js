@@ -158,30 +158,27 @@ app.use('/api/authR', function (req, res,next) {
 
 
 app.use('/api/authU', function (req, res,next) {
-	if (!req.headers.authorization) {
-		return res.status(401).json({ error: 'No credentials sent!' });
-  	}
+	// if (!req.headers.authorization) {
+	// 	return res.status(401).json({ error: 'No credentials sent!' });
+  	// }
 	try {
-		var credentialsString = Buffer.from(req.headers.authorization.split(" ")[1], 'base64').toString();
-		var lst = credentialsString.split(":");
-		console.log(lst);
-		var [username,password,repeatpsw, gamedifficulity] = [lst[0], lst[1], lst[2], lst[3]]
+		var [username, password,repeatpsw] = [req.body["username"], req.body["password"], req.body["confirmpassword"]]
 		if (password != repeatpsw){
 			console.log("Your password are not same");
 			res.status(400).json({error: "Your password are not same"});
 			return;
 		}
-		if (gamedifficulity == "" || password == "" || repeatpsw == ""){
-			res.status(400).json({error: "All the update fields can not be empty"});
+		if (password == "" || repeatpsw == ""){
+			res.status(401).json({error: "All the password fields can not be empty"});
 			return;
 		}
-		let sql = "UPDATE ftduser SET password = sha512($1), gamedifficulity= $2 WHERE username = $3;";
-        	pool.query(sql, [password, gamedifficulity, username], (err, pgRes) => {
+		let sql = "UPDATE ftduser SET password = sha512($2)WHERE username = $1;";
+        	pool.query(sql, [username, password], (err, pgRes) => {
   			if (err){
 				console.log(err.message);
                 res.status(401).json({ error: 'error'});
 			} else {
-				console.log("no error");
+				console.log("really no error");
 				next();
         	}
 		});
@@ -192,14 +189,11 @@ app.use('/api/authU', function (req, res,next) {
 
 
 app.use('/api/authD', function (req, res,next) {
-	if (!req.headers.authorization) {
-		return res.status(401).json({ error: 'No credentials sent!' });
-  	}
+	// if (!req.headers.authorization) {
+	// 	return res.status(401).json({ error: 'No credentials sent!' });
+  	// }
 	try {
-		var credentialsString = Buffer.from(req.headers.authorization.split(" ")[1], 'base64').toString();
-		var lst = credentialsString.split(":");
-		var username = lst[0];
-		console.log(username);
+		var [username] = [req.body["username"]]
 		let sql = "DELETE FROM ftduser WHERE username=$1;";
         	pool.query(sql, [username], (err, pgRes) => {
   			if (err){
@@ -260,5 +254,9 @@ app.get('/api/view/profile', function (req, res) {
 	res.json({"message":"go to profile page"}); 
 });
 
+app.get('/api/view/game', function (req, res) {
+	res.status(200); 
+	res.json({"message":"go to game page"}); 
+});
 
 

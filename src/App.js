@@ -2,7 +2,9 @@ import logo from './logo.svg';
 import './App.css';
 import Game from './game';
 import LoginPage from './login';
+import ProfilePage from './profile';
 import RegisterPage from './register';
+import Leaderboard from './leaderboard';
 import React from 'react';
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 
@@ -38,7 +40,7 @@ class App extends React.Component {
 			{ title: 'Game'},
 			{ title: 'Instruction'},
 			{ title: 'Profile'},
-			{ title: 'Stats'},
+			{ title: 'Leaderboard'},
 			{ title: 'Logout'}
 		];
 		console.log(this.state.page);
@@ -55,6 +57,15 @@ class App extends React.Component {
 			return (
 				<div><ThemeProvider theme={theme}>
 				<RegisterPage app={this}></RegisterPage></ThemeProvider></div>);
+		}else if(this.state.page === "Profile"){
+			return (
+				<div><ThemeProvider theme={theme}>
+				<ProfilePage app={this} username={this.state.username} password={this.state.password} sections={sections}></ProfilePage></ThemeProvider></div>);
+		}else if(this.state.page === "Leaderboard"){
+			return (
+				<div><ThemeProvider theme={theme}>
+				<Leaderboard app={this} sections={sections}></Leaderboard></ThemeProvider></div>);
+
 		}
 	}
 	

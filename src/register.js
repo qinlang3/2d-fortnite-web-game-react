@@ -15,23 +15,23 @@ class RegisterPage extends React.Component {
             password_err : false,
             username_err : false,
             empty_err: false,
-            go_to_loginpage: false
+            go_to_loginpage: false,
+            username : "",
+            password : "",
+            confirm_password : ""
         }
-        this.username = "";
-        this.password = "";
-        this.confirm_password = "";
     }
 
     handleOnChangeusername = event => {
-      this.username = event.target.value;
+      this.setState({username: event.target.value})
     };
 
     handleOnChangepassword= event => {
-      this.password = event.target.value;
+      this.setState({password: event.target.value})
     };
 
     handleOnChangeconfirmpassword= event => {
-      this.confirm_password = event.target.value;
+      this.setState({confirm_password: event.target.value})
     };
 
      fetchData(app){
@@ -41,12 +41,12 @@ class RegisterPage extends React.Component {
         headers: {
           "Content-Type": "application/json; charset=utf-8",
         },
-        body: JSON.stringify({"username": this.username, "password": this.password, "confirmpassword": this.confirm_password})
+        body: JSON.stringify({"username": this.state.username, "password": this.state.password, "confirmpassword": this.state.confirm_password})
       })
       .then((resp) => {
         this.setState({password_err:false, username_err: false, empty_err: false});
         if  (resp.status === 200){
-          app.setState({page:"Login", username:this.username, password: this.password});
+          app.setState({page:"Login", username:this.state.username, password: this.state.password});
         }else if (resp.status === 400){
           this.setState({password_err:true});
         }else if (resp.status === 409){
