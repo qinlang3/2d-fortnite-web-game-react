@@ -5,7 +5,7 @@ import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Toolbar from '@material-ui/core/Toolbar';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
-import Switch from '@material-ui/core/Switch';
+
 import Brightness2Icon from '@material-ui/icons/Brightness2';
 import Brightness2OutlinedIcon from '@material-ui/icons/Brightness2Outlined';
 import AppBar from '@material-ui/core/AppBar';
@@ -93,7 +93,7 @@ const useStyles = makeStyles((theme) => ({
 export default function Header(props) {
   const classes = useStyles();
   const theme = useTheme();
-  const { sections, title, app } = props;
+  const { sections, title, app , handler} = props;
   const [open, setOpen] = React.useState(false);
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -102,38 +102,9 @@ export default function Header(props) {
   const handleDrawerClose = () => {
     setOpen(false);
   };
+ 
 
-  // const getView = (app, title)  => {
-  //   console.log("what the fk");
-  //     console.log(title);
-  //   // const url = null;
-  //   if (title === 'Profile'){
-  //     url = '/api/view/profile';
-  //   }
-  //   if (title === 'Game'){
-  //     url = '/api/view/game';
-  //   }
-  //   fetch(url, {
-  //     method: "GET",
-  //     dataType: "JSON",
-  //     headers: {
-  //       "Content-Type": "application/json; charset=utf-8",
-  //     }
-  //   })
-  //   .then((resp) => {
-  //     if  (resp.status === 200){
-  //       app.setState({page: title});
-  //     }
-  //     console.log(resp.status);
-  //     return resp.json()
-  //   }) 
-  //   .catch((error) => {
-  //     console.log(error, "catch the hoop")
-  //   })
-  // };
-
-  var localTheme = window.localStorage.getItem('theme');
-  var checked = localTheme ? (localTheme === 'dark' ? true : false) : true;
+  
   return (
     <React.Fragment>
       <AppBar position="fixed" color="default" className={clsx(classes.appBar, {
@@ -151,13 +122,6 @@ export default function Header(props) {
           {title}
         </Typography>
        
-        <Switch
-          checked={checked}
-          onChange={app.toggleTheme}
-          color="primary"
-        />
-        {checked? <Brightness2Icon color="primary"></ Brightness2Icon> : 
-            <Brightness2OutlinedIcon color="primary"></ Brightness2OutlinedIcon>}
         {sections !== null ? <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -180,7 +144,6 @@ export default function Header(props) {
         paper: classes.drawerPaper,
       }}
     >
-      {/* app.setState({page: section.title} */}
       <div className={classes.drawerHeader}>
         <IconButton onClick={handleDrawerClose}>
           {theme.direction === 'rtl' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
@@ -189,7 +152,7 @@ export default function Header(props) {
       <Divider />
       <List>
         {sections.map((section) => (
-          <ListItem button selected={section.title===app.state.page ? true : false} component="a" key={section.title} onClick={() => {app.setState({page: section.title})}}>
+          <ListItem button selected={section.title===app.state.page ? true : false} component="a" key={section.title} onClick={() => {app.setState({page: section.title});handler(section.title)}}>
             <ListItemText primary={section.title} />
           </ListItem>
         ))}

@@ -1,10 +1,8 @@
 function randint(n){ return Math.round(Math.random()*n); }
 function rand(n){ return Math.random()*n; }
 
-
-
 class Stage {
-	constructor(){
+	constructor(mapSize, AInum){
 		//this.canvas = canvas;
 		this.actors=[]; // all actors on this stage (monsters, player, boxes, ...)
 		//this.player=null; // a special actor, the player
@@ -13,7 +11,7 @@ class Stage {
 		//this.height=canvas.height;
 		//this.difficulty='easy';
 		//var enemCount=50;
-		var obstaclesCount=20;
+		
 		this.changed=true;
 		/*
 		if(difficulty=='meidum') this.difficulty='meidum';
@@ -24,21 +22,21 @@ class Stage {
 		if(obstacles=='many') obstaclesCount=1000;*/
 
 		// the actual width and height of the map
-		this.mapWidth = 2000;
-		this.mapHeight = 2000;
-		this.playerNum=0;
-		// Add the player to the center of the map
-		/*var velocity = new Pair(0,0);
-		var radius = 24;
-		var colour= 'rgba(217,189,164,1)';
-		var position = new Pair(Math.floor(this.mapWidth/2), Math.floor(this.mapHeight/2));*/
-		// Set camrea focus on the player
-		//this.camera = new Pair(Math.floor(this.mapWidth/2), Math.floor(this.mapHeight/2));
-		// Add the player
-		//this.addPlayer(new Player(this, position, velocity, colour, radius));
-		// the number of total enemies
-		// this.enemNum=0;
-		// Add in obstacles
+		var obstaclesCount=50;
+		if(mapSize=='small'){
+			this.mapWidth = 2000;
+			this.mapHeight = 2000;
+
+		}else if(mapSize=='medium'){
+			obstaclesCount=150;
+			this.mapWidth = 5000;
+			this.mapHeight = 5000;
+
+		}else{
+			obstaclesCount=500;
+			this.mapWidth = 10000;
+			this.mapHeight = 10000;
+		}
 		while(obstaclesCount>0){
 			var x=Math.floor((Math.random()*this.mapWidth)); 
 			var y=Math.floor((Math.random()*this.mapHeight));
@@ -54,6 +52,49 @@ class Stage {
 				obstaclesCount--;
 			}
 		}
+		this.playerNum=0;
+		var num=0;
+		if(AInum=='few'){
+			num=10;
+		}
+		if(AInum=='many'){
+			num=30;
+		}
+		var counter=1000;
+		while(num>0){
+			var x=Math.floor((Math.random()*this.mapWidth)); 
+			var y=Math.floor((Math.random()*this.mapHeight)); 
+			if(this.getActor(x,y)===null){
+				var result=this.checkOverlapPlayer(x, y, 24);
+				if(!result){
+					var velocity = new Pair(Math.round(Math.random()*3), Math.round(Math.random()*3));
+					var radius = 24;
+					var colour= 'rgba(111,221,91,1)';
+					var position = new Pair(x,y);
+					var gen=Math.round(Math.random()*10);
+					var type = 'level2';
+					if(gen>=8){
+						type = 'level3';
+					}
+					this.addPlayer(new Bot(this, counter, position, velocity, colour, radius, type));
+					num--;
+					counter++;
+				}
+			}
+		}
+		// Add the player to the center of the map
+		/*var velocity = new Pair(0,0);
+		var radius = 24;
+		var colour= 'rgba(217,189,164,1)';
+		var position = new Pair(Math.floor(this.mapWidth/2), Math.floor(this.mapHeight/2));*/
+		// Set camrea focus on the player
+		//this.camera = new Pair(Math.floor(this.mapWidth/2), Math.floor(this.mapHeight/2));
+		// Add the player
+		//this.addPlayer(new Player(this, position, velocity, colour, radius));
+		// the number of total enemies
+		// this.enemNum=0;
+		// Add in obstacles
+		
 		// Add in enemies 
 		/*
 		var level1=Math.round(enemCount*0.5);
@@ -238,70 +279,6 @@ class Stage {
 		}
 		//this.updateCamera();
 	}
-	/*
-	draw(){
-		var context = this.canvas.getContext('2d');
-		context.clearRect(0, 0, this.width, this.height);
-		context.fillStyle='rgba(140, 225, 150, 1)';
-		context.fillRect(0, 0, this.width, this.height);
-		for(var i=0;i<this.actors.length;i++){
-			this.actors[i].draw(context);
-		}
-		this.displayInfo(context);
-	}
-	*/
-
-	displayInfo(context){
-		context.fillStyle = 'rgba(0,0,0,1)';
-		context.font='bold 20px Arial';
-		context.fillText('Remaining Targets:', 20, 33);
-		context.fillText(this.enemNum, 100, 60);
-		context.font = 'bold 23px Arial';
-		context.fillText('Health:', 970, 33);
-		context.fillStyle='rgba(228,65,65,1)';
-		var len=Math.round(this.player.health*1.2);
-		context.fillRect(1060, 10, len, 30);
-		context.fillStyle='rgba(0,0,0,1)';
-		context.lineWidth=2;
-		context.strokeRect(1060, 10, 120, 30);
-		context.fillText('Points:', 970, 70);
-		context.fillText(this.player.points, 1065, 72);
-		context.fillText('Difficulty:', 970, 102);
-		context.fillText(this.difficulty, 1082, 102);
-		if(this.player.weapons[this.player.weaponIdx].type=='fist'){
-			var fist=document.getElementById('fist');
-			context.drawImage(fist, 1040, 125, 45, 40);
-		}
-		if(this.player.weapons[this.player.weaponIdx].type=='pistol'){
-			var pistol=document.getElementById('pistol');
-			context.drawImage(pistol, 1040, 125, 50, 40);
-
-		}
-		if(this.player.weapons[this.player.weaponIdx].type=='rifle'){
-			var rifle=document.getElementById('rifle');
-			context.drawImage(rifle, 1000, 125, 120, 40);
-		}
-		if(this.player.weapons[this.player.weaponIdx].type=='rpg'){
-			var rpg=document.getElementById('rpg');
-			context.drawImage(rpg, 1040, 125, 65, 55);
-		}
-		var ammo=document.getElementById('ammo');
-		context.drawImage(ammo, 1020, 180, 40, 30);
-		context.fillText(this.player.weapons[this.player.weaponIdx].ammo, 1065, 200);
-		context.lineWidth=2;
-		context.strokeRect(995, 120, 150, 100);
-		if(this.checkWon()){
-			context.font = 'bold 30px Arial';
-			context.fillText('You Won!', 520, 350);
-			$("#ui_play_restart").show();
-		}
-		if(this.player.health==0){
-			context.font = 'bold 30px Arial';
-			context.fillText('You Died!', 520, 350);
-			$("#ui_play_restart").show();
-
-		}
-	}
 	// return the first actor at coordinates (x,y) return null if there is no such actor
 	getActor(x, y){
 		for(var i=0;i<this.actors.length;i++){
@@ -314,8 +291,11 @@ class Stage {
 	toJSON(){
 		var objlist=[];
 		var playerlist=[];
+		var botlist=[]
 		for(var i=0;i<this.actors.length;i++){
-			if(this.actors[i] instanceof Player){
+			if(this.actors[i] instanceof Bot){
+				botlist.push(this.actors[i].toJSON());
+			}else if (this.actors[i] instanceof Player){
 				playerlist.push(this.actors[i].toJSON());
 			}else{
 				objlist.push(this.actors[i].toJSON());
@@ -327,7 +307,8 @@ class Stage {
 				mapHeight: this.mapHeight,
 				playerNum: this.playerNum,
 				objs: objlist,
-				players: playerlist
+				players: playerlist,
+				bots: botlist
 			}
 		}
 	}
@@ -444,10 +425,7 @@ class Obstacle extends Ball {
 				radius: this.radius,
 				width: this.width,
 				height: this.height,
-				health: this.health,
-				dealthCD: this.deathCD,
 				beingHit: this.beingHit,
-				hitCD: this.hitCD
 			}
 		}
 	}
@@ -502,7 +480,6 @@ class Item extends Ball {
 				colour: this.colour,
 				radius: this.radius,
 				type: this.type,
-				beingPicked: this.beingPicked
 			}
 		}
 	}
@@ -528,8 +505,6 @@ class Explosive extends Ball {
 				velocity: this.velocity.toJSON(),
 				colour: this.colour,
 				radius: this.radius,
-				fireFrom: this.fireFrom,
-				counter: this.counter,
 			}
 		}
 	}
@@ -545,7 +520,7 @@ class Explosive extends Ball {
 			return;
 		}
 		for(var i=0;i<this.stage.actors.length;i++){
-			if((this.stage.actors[i] instanceof Player)&&(this.stage.actors[i].id!=this.fireFrom)&&(!this.victims.includes(this.stage.actors[i]))){
+			if((this.stage.actors[i] instanceof Player)&&(this.stage.actors[i].id!=this.fireFrom.id)&&(!this.victims.includes(this.stage.actors[i]))){
 				var distX=this.stage.actors[i].position.x-this.position.x;
 				var distY=this.stage.actors[i].position.y-this.position.y;
 				if(Math.sqrt(distX*distX+distY*distY)<=this.radius+this.stage.actors[i].radius){
@@ -559,17 +534,6 @@ class Explosive extends Ball {
 		}
 		this.stage.updateChanged(true);
 	}
-	/*
-	draw(context){
-		var stageX=this.getStagePositionX(this.position.x);
-		var stageY=this.getStagePositionY(this.position.y);
-		var x = Math.round(stageX);
-		var y = Math.round(stageY);
-		context.fillStyle=this.colour;
-		context.beginPath(); 
-		context.arc(x, y, this.radius, 0, 2 * Math.PI, false); 
-		context.fill();
-	}*/
 
 }
 class Bullet extends Ball {
@@ -646,7 +610,7 @@ class Bullet extends Ball {
 		var distY;
 		for(var i=0;i<this.stage.actors.length;i++){
 			if(this.stage.actors[i] instanceof Player){
-				if(this.stage.actors[i].id!=this.fireFrom){
+				if(this.stage.actors[i].id!=this.fireFrom.id){
 					distX=this.stage.actors[i].position.x-this.position.x;
 					distY=this.stage.actors[i].position.y-this.position.y;
 					// bullet hit someone
@@ -660,7 +624,14 @@ class Bullet extends Ball {
 								this.explosive(this.stage.actors[i]);
 							}
 							if(this.stage.actors[i].health<=0){
-								this.stage.getPlayer(this.fireFrom).points++;
+								this.fireFrom.points++;
+								if(this.stage.actors[i] instanceof Bot){
+									this.fireFrom.msg="You killed Bot "+this.stage.actors[i].id;
+								}else{
+									this.fireFrom.msg="You killed Player "+this.stage.actors[i].id;
+								}
+								this.fireFrom.msgCD=0;
+
 							}
 						}
 						this.stage.removeActor(this);
@@ -672,17 +643,9 @@ class Bullet extends Ball {
 		this.range--;
 		this.stage.updateChanged(true);	
 	}
-	/*draw(context){
-		var stageX=this.getStagePositionX(this.position.x);
-		var stageY=this.getStagePositionY(this.position.y);
-		var x = Math.round(stageX);
-		var y = Math.round(stageY);
-		context.fillStyle=this.colour;
-		context.beginPath(); 
-		context.arc(x, y, this.radius, 0, 2 * Math.PI, false); 
-		context.fill();
-	}*/
 }
+
+
 /*
 class Enemy extends Ball {
 	constructor(stage, position, velocity, colour, radius, type){
@@ -706,138 +669,7 @@ class Enemy extends Ball {
 		if(this.stage.difficulty=='meidum') this.detectRange=800;
 		if(this.stage.difficulty=='hard') this.detectRange=1200;
 	}
-	aim(target){
-		var x=this.position.x;
-		var y=this.position.y;
-		if(target.x==x&&target.y==y){
-			this.aim_target = new Pair(x, y-1);
-		}else{
-			this.aim_target = target;
-		}	
-	}
-	fireWeapon() {
-		var x1=this.position.x;
-		var y1=this.position.y;
-		if(this.fireCD==0){
-			if(this.weapon=='fist'){
-				var distX=this.stage.player.position.x-x1;
-				var distY=this.stage.player.position.y-y1;
-				if(Math.sqrt(distX*distX+distY*distY)<=this.radius+this.stage.player.radius){
-					if(this.stage.player.health>0){
-						this.stage.player.beingHit=true;
-						this.stage.player.health-=5;
-					}
-				}
-				this.fireCD=50+randint(10);
-				if(this.stage.difficulty=='hard') this.fireCD=20+randint(10);
-				return;
-			}
-			var targetX = this.aim_target.x;
-			var targetY = this.aim_target.y;
-			if(this.weapon=='rifle'){
-				var x2=(45*(targetX-x1)/Math.sqrt((targetX-x1)*(targetX-x1)+(targetY-y1)*(targetY-y1)))+x1;
-				var y2=(45*(targetY-y1)/Math.sqrt((targetX-x1)*(targetX-x1)+(targetY-y1)*(targetY-y1)))+y1;
-				var position = new Pair(x2,y2);
-				var x3=14*(targetX-position.x)/Math.sqrt((targetX-position.x)*(targetX-position.x)
-					+(targetY-position.y)*(targetY-position.y));
-				var y3=14*(targetY-position.y)/Math.sqrt((targetX-position.x)*(targetX-position.x)
-					+(targetY-position.y)*(targetY-position.y));
-				var velocity=new Pair(x3, y3);
-				var colour='rgba(221,60,12,1)';
-				var radius=5;
-				var fireFrom=this;
-				var type='level2';
-				this.stage.addActor(new Bullet(this.stage, position, velocity, colour, radius, type, fireFrom));
-				this.fireCD=30+randint(10);
-				if(this.stage.difficulty=='hard') this.fireCD=10+randint(10);
-				return;
-			}
-			if(this.weapon=='rpg'){
-				var x2=(45*(targetX-x1)/Math.sqrt((targetX-x1)*(targetX-x1)+(targetY-y1)*(targetY-y1)))+x1;
-				var y2=(45*(targetY-y1)/Math.sqrt((targetX-x1)*(targetX-x1)+(targetY-y1)*(targetY-y1)))+y1;
-				var position = new Pair(x2,y2);
-				var x3=10*(targetX-position.x)/Math.sqrt((targetX-position.x)*(targetX-position.x)
-					+(targetY-position.y)*(targetY-position.y));
-				var y3=10*(targetY-position.y)/Math.sqrt((targetX-position.x)*(targetX-position.x)
-					+(targetY-position.y)*(targetY-position.y));
-				var velocity=new Pair(x3, y3);
-				var colour='rgba(221,60,12,1)';
-				var radius=8;
-				var fireFrom=this;
-				var type='level3';
-				this.stage.addActor(new Bullet(this.stage, position, velocity, colour, radius, type, fireFrom));
-				this.fireCD=60+randint(10);
-				if(this.stage.difficulty=='hard') this.fireCD=30+randint(10);
-				return;
-			}
-		}
-	}
-	step(){
-		if(this.health<0){
-			this.health=0;
-			this.beingHit=false;
-		}
-		if(this.health>0){
-			this.position.x+=this.velocity.x;
-			this.position.y+=this.velocity.y;
-			for(var i=0;i<this.stage.actors.length;i++){
-				if(this.stage.actors[i] instanceof Obstacle){
-					var x=this.stage.actors[i].position.x;
-					var y=this.stage.actors[i].position.y;
-					var xRange=x+this.stage.actors[i].width;
-					var yRange=y+this.stage.actors[i].height;
-					if((y-this.radius<this.position.y&&this.position.y<yRange+this.radius)&&
-						(x-this.radius<this.position.x&&this.position.x<xRange+this.radius)){
-						if(this.position.y>yRange){
-							this.position.y=yRange+this.radius;
-							this.velocity.y=Math.abs(this.velocity.y);
-						}else if(this.position.y<y){
-							this.position.y=y-this.radius;
-							this.velocity.y=-Math.abs(this.velocity.y);
-						}else if(this.position.x>xRange){
-							this.position.x=xRange+this.radius;
-							this.velocity.x=Math.abs(this.velocity.x);
-						}else if(this.position.x<x){
-							this.position.x=x-this.radius;
-							this.velocity.x=-Math.abs(this.velocity.x);
-						}	
-					}
-				}
-			}
-			// bounce off the walls
-			if(this.position.x<0){
-				this.position.x=0;
-				this.velocity.x=Math.abs(this.velocity.x);
-			}
-			if(this.position.x>this.stage.mapWidth){
-				this.position.x=this.stage.mapWidth;
-				this.velocity.x=-Math.abs(this.velocity.x);
-			}
-			if(this.position.y<0){
-				this.position.y=0;
-				this.velocity.y=Math.abs(this.velocity.y);
-			}
-			if(this.position.y>this.stage.mapHeight){
-				this.position.y=this.stage.mapHeight;
-				this.velocity.y=-Math.abs(this.velocity.y);
-			}
-			var distX=this.stage.player.position.x-this.position.x;
-			var distY=this.stage.player.position.y-this.position.y;
-			var dist=Math.sqrt(distX*distX+distY*distY);
-			// update fireCD
-			this.fireCD--;
-			if(this.fireCD<0){
-				this.fireCD=0;
-			}
-			if(dist<=this.detectRange&&this.stage.player.health>0){	// player within the enemy's detect range
-				// aim to the player
-				this.aim(this.stage.player.position);
-				// move towards the player
-				this.headTo(this.stage.player.position);
-				this.fireWeapon();
-			}		
-		}
-	}
+	
 	draw(context){
 		if(this.beingHit){  // being hit
 			context.fillStyle = 'rgba(174,0,0,1)';
@@ -1051,12 +883,10 @@ class Player extends Ball {
 		this.points=0;
 		this.deathCD=0;
 		this.hitCD=0;
+		this.msg="None";
+		this.msgCD=0;
 	}
 	toJSON(){
-		var list=[];
-		for(var i=0;i<this.weapons.length;i++){
-			list.push(this.weapons[i].toJSON());
-		}
 		return {
 			class: "Player",
 			data: {
@@ -1069,7 +899,8 @@ class Player extends Ball {
 				beingHit: this.beingHit,
 				weapon: this.weapons[this.weaponIdx].toJSON(),
 				points: this.points,
-				health: this.health
+				health: this.health,
+				msg: this.msg
 			}
 		}
 	}
@@ -1169,9 +1000,8 @@ class Player extends Ball {
 				var velocity=new Pair(x3, y3);
 				var colour='rgba(221,60,12,1)';
 				var radius=5;
-				var fireFrom=this.id;
 				var type='level1';
-				this.stage.addActor(new Bullet(this.stage, position, velocity, colour, radius, type, fireFrom));
+				this.stage.addActor(new Bullet(this.stage, position, velocity, colour, radius, type, this));
 				this.weapons[this.weaponIdx].update();
 			}
 			if(weapon.type=='rifle'&&weapon.ammo>0){
@@ -1185,9 +1015,8 @@ class Player extends Ball {
 				var velocity=new Pair(x3, y3);
 				var colour='rgba(221,60,12,1)';
 				var radius=5;
-				var fireFrom=this.id;
 				var type='level2';
-				this.stage.addActor(new Bullet(this.stage, position, velocity, colour, radius, type, fireFrom));
+				this.stage.addActor(new Bullet(this.stage, position, velocity, colour, radius, type, this));
 				this.weapons[this.weaponIdx].update();
 			}
 			if(weapon.type=='rpg'&&weapon.ammo>0){
@@ -1201,9 +1030,8 @@ class Player extends Ball {
 				var velocity=new Pair(x3, y3);
 				var colour='rgba(221,60,12,1)';
 				var radius=8;
-				var fireFrom=this.id;
 				var type='level3';
-				this.stage.addActor(new Bullet(this.stage, position, velocity, colour, radius, type, fireFrom));
+				this.stage.addActor(new Bullet(this.stage, position, velocity, colour, radius, type, this));
 				this.weapons[this.weaponIdx].update();
 			}
 			this.stage.updateChanged(true);
@@ -1242,6 +1070,11 @@ class Player extends Ball {
 			this.hitCD++;
 		}
 		if(this.health>0){
+			this.msgCD++;
+			if(this.msgCD==100){
+				this.msg='None';
+				this.msgCD=0;
+			}
 			this.updateWeaponCD();
 			this.position.x+=this.velocity.x;
 			this.position.y+=this.velocity.y;
@@ -1279,6 +1112,208 @@ class Player extends Ball {
 			}
 			return;
 		}	
+	}
+}
+class Bot extends Player {
+	constructor(stage, id, position, velocity, colour, radius, type){
+		super(stage, id, position, velocity, colour, radius);
+		this.type=type;
+		this.health=100;
+		this.weapon='fist';
+		if(this.type=='level2') this.weapon='rifle';
+		if(this.type=='level3') {
+			this.health=100; 
+			this.weapon='rpg';
+		}
+		this.aim_target = new Pair(0, 0);  // Aim position which indicates the map position 
+										   // where the aim crosshair is pointed at. 
+		this.beingHit = false;
+		this.hitCD;
+		this.fireCD=0;
+		this.deathCD=0;
+		this.detectRange=800;
+	}
+	toJSON() {
+		return {
+			class: "Bot",
+			data: {
+				id: this.id,
+				position: this.position.toJSON(),
+				velocity: this.velocity.toJSON(),
+				colour: this.colour,
+				radius: this.radius,
+				aimTarget: this.aim_target.toJSON(),
+				beingHit: this.beingHit,
+				weapon: this.weapon,
+				health: this.health,
+				type: this.type
+			}
+		}
+
+	}
+	aim(target){
+		var x=this.position.x;
+		var y=this.position.y;
+		if(target.x==x&&target.y==y){
+			this.aim_target = new Pair(x, y-1);
+		}else{
+			this.aim_target = target;
+		}	
+	}
+	fireWeapon(actor) {
+		var x1=this.position.x;
+		var y1=this.position.y;
+		if(this.fireCD==0){
+			if(this.weapon=='fist'){
+				var distX=actor.position.x-x1;
+				var distY=actor.position.y-y1;
+				if(Math.sqrt(distX*distX+distY*distY)<=this.radius+actor.radius){
+					if(actor.health>0){
+						actor.beingHit=true;
+						actor.health-=10;
+					}
+				}
+				this.fireCD=30+randint(10);
+				return;
+			}
+			var targetX = this.aim_target.x;
+			var targetY = this.aim_target.y;
+			if(this.weapon=='rifle'){
+				var x2=(45*(targetX-x1)/Math.sqrt((targetX-x1)*(targetX-x1)+(targetY-y1)*(targetY-y1)))+x1;
+				var y2=(45*(targetY-y1)/Math.sqrt((targetX-x1)*(targetX-x1)+(targetY-y1)*(targetY-y1)))+y1;
+				var position = new Pair(x2,y2);
+				var x3=14*(targetX-position.x)/Math.sqrt((targetX-position.x)*(targetX-position.x)
+					+(targetY-position.y)*(targetY-position.y));
+				var y3=14*(targetY-position.y)/Math.sqrt((targetX-position.x)*(targetX-position.x)
+					+(targetY-position.y)*(targetY-position.y));
+				var velocity=new Pair(x3, y3);
+				var colour='rgba(221,60,12,1)';
+				var radius=5;
+				var fireFrom=this;
+				var type='level2';
+				this.stage.addActor(new Bullet(this.stage, position, velocity, colour, radius, type, fireFrom));
+				this.fireCD=20+randint(10);
+				return;
+			}
+			if(this.weapon=='rpg'){
+				var x2=(45*(targetX-x1)/Math.sqrt((targetX-x1)*(targetX-x1)+(targetY-y1)*(targetY-y1)))+x1;
+				var y2=(45*(targetY-y1)/Math.sqrt((targetX-x1)*(targetX-x1)+(targetY-y1)*(targetY-y1)))+y1;
+				var position = new Pair(x2,y2);
+				var x3=10*(targetX-position.x)/Math.sqrt((targetX-position.x)*(targetX-position.x)
+					+(targetY-position.y)*(targetY-position.y));
+				var y3=10*(targetY-position.y)/Math.sqrt((targetX-position.x)*(targetX-position.x)
+					+(targetY-position.y)*(targetY-position.y));
+				var velocity=new Pair(x3, y3);
+				var colour='rgba(221,60,12,1)';
+				var radius=8;
+				var fireFrom=this;
+				var type='level3';
+				this.stage.addActor(new Bullet(this.stage, position, velocity, colour, radius, type, fireFrom));
+				this.fireCD=50+randint(10);
+				return;
+			}
+		}
+	}
+	step(){
+		this.stage.updateChanged(true);
+		if(this.health<0){
+			this.health=0;
+		}
+		if(this.health==0){
+			if(this.deathCD%2==0){
+				this.beingHit=true;
+			}else{
+				this.beingHit=false;
+			}
+			this.deathCD++;
+			if(this.deathCD==20){
+				this.stage.removePlayer(this);
+			}
+			return;
+		}
+		if(this.beingHit){
+			if(this.hitCD==2){
+				this.beingHit=false;
+				this.hitCD=0;
+			}
+			this.hitCD++;
+		}
+		if(this.health>0){
+			this.position.x+=this.velocity.x;
+			this.position.y+=this.velocity.y;
+			for(var i=0;i<this.stage.actors.length;i++){
+				if(this.stage.actors[i] instanceof Obstacle){
+					var x=this.stage.actors[i].position.x;
+					var y=this.stage.actors[i].position.y;
+					var xRange=x+this.stage.actors[i].width;
+					var yRange=y+this.stage.actors[i].height;
+					if((y-this.radius<this.position.y&&this.position.y<yRange+this.radius)&&
+						(x-this.radius<this.position.x&&this.position.x<xRange+this.radius)){
+						if(this.position.y>yRange){
+							this.position.y=yRange+this.radius;
+							this.velocity.y=Math.abs(this.velocity.y);
+						}else if(this.position.y<y){
+							this.position.y=y-this.radius;
+							this.velocity.y=-Math.abs(this.velocity.y);
+						}else if(this.position.x>xRange){
+							this.position.x=xRange+this.radius;
+							this.velocity.x=Math.abs(this.velocity.x);
+						}else if(this.position.x<x){
+							this.position.x=x-this.radius;
+							this.velocity.x=-Math.abs(this.velocity.x);
+						}	
+					}
+				}
+			}
+			// bounce off the walls
+			if(this.position.x<0){
+				this.position.x=0;
+				this.velocity.x=Math.abs(this.velocity.x);
+			}
+			if(this.position.x>this.stage.mapWidth){
+				this.position.x=this.stage.mapWidth;
+				this.velocity.x=-Math.abs(this.velocity.x);
+			}
+			if(this.position.y<0){
+				this.position.y=0;
+				this.velocity.y=Math.abs(this.velocity.y);
+			}
+			if(this.position.y>this.stage.mapHeight){
+				this.position.y=this.stage.mapHeight;
+				this.velocity.y=-Math.abs(this.velocity.y);
+			}
+			
+			// update fireCD
+			this.fireCD--;
+			if(this.fireCD<0){
+				this.fireCD=0;
+			}
+
+			for(var i=0;i<this.stage.actors.length;i++){
+				if(this.stage.actors[i] instanceof Bot&&this.stage.actors[i].id!=this.id){
+					var distX=this.stage.actors[i].position.x-this.position.x;
+					var distY=this.stage.actors[i].position.y-this.position.y;
+					var dist=Math.sqrt(distX*distX+distY*distY);
+					if(dist<=this.detectRange&&this.stage.actors[i].health>0){	// player within the enemy's detect range
+						this.aim(this.stage.actors[i].position);
+						this.headTo(this.stage.actors[i].position);
+						this.fireWeapon(this.stage.actors[i]);
+						break;
+					}
+				}
+				if((this.stage.actors[i] instanceof Player)&&!(this.stage.actors[i] instanceof Bot)){
+					var distX=this.stage.actors[i].position.x-this.position.x;
+					var distY=this.stage.actors[i].position.y-this.position.y;
+					var dist=Math.sqrt(distX*distX+distY*distY);
+					if(dist<=this.detectRange&&this.stage.actors[i].health>0){	// player within the enemy's detect range
+						this.aim(this.stage.actors[i].position);
+						this.headTo(this.stage.actors[i].position);
+						this.fireWeapon(this.stage.actors[i]);
+						break;
+					}
+				}
+			}
+		}
 	}
 }
 module.exports = Stage;
