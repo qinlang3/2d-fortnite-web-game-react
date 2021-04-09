@@ -39,6 +39,7 @@ var objs=[];
 var bots=[];
 var px, py, cameraX, cameraY;
 var player=null;
+var username;
 
 function switchWeapon(){
 	socket.send(JSON.stringify({"gameplay": {"data": {"id": id, "type": 'switchWeapon'}}}));
@@ -86,13 +87,34 @@ function updateCamera(){
 	}
 	
 }
-
+var sent = true;
+function sendtoDB(){
+	if(sent){
+		sent=false;
+		fetch('/api/authR/game', {
+			method: "PUT",
+			dataType: "JSON",
+			headers: {
+			  "Content-Type": "application/json; charset=utf-8",
+			},
+			body: JSON.stringify({"username": username, "points": player.points})
+		  })
+		  .then((resp) => {
+			return ;
+		  }) 
+		  .catch((error) => {
+		  })
+	}
+}
 function updatePosition(){
 	for(var i=0;i<players.length;i++){
 		if(players[i].data.id===id){
 			px=players[i].data.position.x;
 			py=players[i].data.position.y;
 			player=players[i].data;
+			if(player.health<=0){
+				sendtoDB();
+			}
 			updateCamera();
 			return;
 		}
@@ -125,7 +147,6 @@ function draw(){
 	}
 }
 function update(message) {
-	console.log(message);
 	if(message.init){ // initialization msg from server, player granted one id
 		alert("Connected to Game Server");
 		id=message.init.id;
@@ -272,6 +293,7 @@ function Canvas(props) {
 		
 	}
 	React.useEffect(() => {
+		username=app.state.username;
 		canvas = canvasRef.current;
 		if(!connected){
 			socket = new WebSocket(`ws://${window.location.hostname}:10001`);
