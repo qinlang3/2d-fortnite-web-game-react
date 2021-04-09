@@ -49,15 +49,17 @@ function broadcast(){
 		stage.updateChanged(false);
 	}
 }
-
-var stage = new Stage();
+var newGame=true;
+var stage = null;
 var interval=null;
-interval=setInterval(function(){ stage.step(); broadcast(); },20);
+var clients=[];
+
 
 wss.on('close', function() {
     console.log('disconnected');
 });
-var clients=[]; for(var i=0;i<50;++i) clients[i]=0;
+
+ 
 function placePlayer(){
 	for(var i=0;i<clients.length;i++){
 		if(!clients[i]){
@@ -68,27 +70,56 @@ function placePlayer(){
 	return -1;
 }
 wss.on('connection', function(ws) {
-
-	var id = placePlayer();
-	stage.playerJoin(id);
+	if(!newGame){ // game started
+		var id = placePlayer();
+		if(id==-1){ // game full
+			ws.send(JSON.stringify({"initFail": "initFail"}));
+			ws.close();
+			return;
+		}else{
+			stage.playerJoin(id);
+			// send initialization msg contains id to client
+			ws.send(JSON.stringify({"init": {"id": id}}));
+			ws.on('message', function(message) {
+				console.log("messge from client: "+message);
+				var msg=JSON.parse(message);
+				if(msg.init){
+					ws.send(JSON.stringify({'response': "no"}));
+					ws.close();
+				}
+				if(msg.init_res){ // client receives initialization msg
+					ws.send(JSON.stringify(stage)); // send copy of game data to client
+					return;
+				}
+				if(msg.gameplay){
+					stage.update(msg.gameplay.data);
+					return;
+				}
+			});
+			return;
+		}
+	}
+	if(newGame){
+		ws.on('message', function(message) {
+			var msg=JSON.parse(message);
+			if(msg.init){
+				stage=new Stage(msg.init.map, msg.init.aiNum);
+				interval=setInterval(function(){ stage.step(); broadcast(); },20);
+				for(var i=0;i<50;++i) clients[i]=0;
+				ws.send(JSON.stringify({'response': "yes"}));
+				newGame=false;
+				ws.close();
+			}else{
+				ws.send(JSON.stringify({"initFail": "initFail"}));
+				ws.close();
+			}
+			return;
+		});
+		return;
+	}
+});
 	
 
-	// send initialization msg contains id to client
-	ws.send(JSON.stringify({"init": {"id": id}}));
-
-	ws.on('message', function(message) {
-		console.log("messge from client: "+message);
-		var msg=JSON.parse(message);
-		if(msg.init_res){ // client receives initialization msg
-			ws.send(JSON.stringify(stage)); // send copy of game data to client
-			return;
-		}
-		if(msg.gameplay){
-			stage.update(msg.gameplay.data);
-			return;
-		}
-	});
-});
 /** 
  * This is middleware to restrict access to subroutes of /api/auth/ 
  * To get past this middleware, all requests should be sent with appropriate
@@ -158,27 +189,30 @@ app.use('/api/authR', function (req, res,next) {
 
 
 app.use('/api/authU', function (req, res,next) {
-	// if (!req.headers.authorization) {
-	// 	return res.status(401).json({ error: 'No credentials sent!' });
-  	// }
+	if (!req.headers.authorization) {
+		return res.status(401).json({ error: 'No credentials sent!' });
+  	}
 	try {
-		var [username, password,repeatpsw] = [req.body["username"], req.body["password"], req.body["confirmpassword"]]
+		var credentialsString = Buffer.from(req.headers.authorization.split(" ")[1], 'base64').toString();
+		var lst = credentialsString.split(":");
+		console.log(lst);
+		var [username,password,repeatpsw, gamedifficulity] = [lst[0], lst[1], lst[2], lst[3]]
 		if (password != repeatpsw){
 			console.log("Your password are not same");
 			res.status(400).json({error: "Your password are not same"});
 			return;
 		}
-		if (password == "" || repeatpsw == ""){
-			res.status(401).json({error: "All the password fields can not be empty"});
+		if (gamedifficulity == "" || password == "" || repeatpsw == ""){
+			res.status(400).json({error: "All the update fields can not be empty"});
 			return;
 		}
-		let sql = "UPDATE ftduser SET password = sha512($2)WHERE username = $1;";
-        	pool.query(sql, [username, password], (err, pgRes) => {
+		let sql = "UPDATE ftduser SET password = sha512($1), gamedifficulity= $2 WHERE username = $3;";
+        	pool.query(sql, [password, gamedifficulity, username], (err, pgRes) => {
   			if (err){
 				console.log(err.message);
                 res.status(401).json({ error: 'error'});
 			} else {
-				console.log("really no error");
+				console.log("no error");
 				next();
         	}
 		});
@@ -189,11 +223,14 @@ app.use('/api/authU', function (req, res,next) {
 
 
 app.use('/api/authD', function (req, res,next) {
-	// if (!req.headers.authorization) {
-	// 	return res.status(401).json({ error: 'No credentials sent!' });
-  	// }
+	if (!req.headers.authorization) {
+		return res.status(401).json({ error: 'No credentials sent!' });
+  	}
 	try {
-		var [username] = [req.body["username"]]
+		var credentialsString = Buffer.from(req.headers.authorization.split(" ")[1], 'base64').toString();
+		var lst = credentialsString.split(":");
+		var username = lst[0];
+		console.log(username);
 		let sql = "DELETE FROM ftduser WHERE username=$1;";
         	pool.query(sql, [username], (err, pgRes) => {
   			if (err){
@@ -254,9 +291,5 @@ app.get('/api/view/profile', function (req, res) {
 	res.json({"message":"go to profile page"}); 
 });
 
-app.get('/api/view/game', function (req, res) {
-	res.status(200); 
-	res.json({"message":"go to game page"}); 
-});
 
 
