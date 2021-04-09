@@ -40,6 +40,7 @@ var bots=[];
 var px, py, cameraX, cameraY;
 var player=null;
 var username;
+var paused=false;
 
 function switchWeapon(){
 	socket.send(JSON.stringify({"gameplay": {"data": {"id": id, "type": 'switchWeapon'}}}));
@@ -287,14 +288,21 @@ function Canvas(props) {
 				connected=false;
 			}
 		}
-		if(title==='Instruction'){
-
+		if(title==='Serach' || title==='Leaderboard'||title==='Game'||title==='Profile'){
+			paused=true;
 		}
-		
 	}
 	React.useEffect(() => {
 		username=app.state.username;
 		canvas = canvasRef.current;
+		if(paused){
+			canvas.addEventListener('mousemove', moveMouse);
+			canvas.addEventListener('mousedown', mouseClick);
+			canvas.addEventListener('mouseup', mouseRelease);
+			canvas.addEventListener('touchmove', touchMove);
+			canvas.addEventListener('touchstart', touchTip);
+			paused=false;
+		}
 		if(!connected){
 			socket = new WebSocket(`ws://${window.location.hostname}:10001`);
 			socket.onopen = function (event) {
