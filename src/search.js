@@ -14,7 +14,8 @@ class SearchPage extends React.Component {
         this.state = {
           search_name: "",
           search_err: false,
-          search_tru: false
+          search_tru: false,
+          top10player: []
         }
     }
 
@@ -44,11 +45,23 @@ class SearchPage extends React.Component {
      })
    }
 
+
+async fetchTop10player(){
+  const url = '/api/view/getTop10player';
+  const response = await fetch(url);
+  const data = await response.json();
+  console.log(data);
+  console.log(data.success);
+  this.setState({top10player: data.success});
+}
+
     handleOnChange = event => {
       this.setState({search_name: event.target.value});
     };
 
     render() {
+      console.log(this.state.top10player);
+      console.log(this.state.top10player.length);
       const {app, sections} =this.props;
         return (
           <React.Fragment>
@@ -77,6 +90,126 @@ class SearchPage extends React.Component {
           >
             Search
           </Button>
+
+                      <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            color="secondary"
+            onClick={() => this.fetchTop10player()}
+          >
+            See Top 10 Player
+          </Button>
+          <TextField
+            read-Only
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="Username"
+        
+            value={this.state.top10player.length < 1 ? "" : "top0 player: " + this.state.top10player[0].username}
+            autoComplete="current-password"
+            />
+                      <TextField
+            read-Only
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="Username"
+       
+            value={ this.state.top10player.length < 2 ? "" : "top1 player: " + this.state.top10player[1].username}
+            autoComplete="current-password"
+            />
+                      <TextField
+            read-Only
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="Username"
+       
+            value={ this.state.top10player.length < 3 ? "" : "top2 player: " + this.state.top10player[2].username}
+            autoComplete="current-password"
+            />
+                      <TextField
+            read-Only
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="Username"
+        
+            value={ this.state.top10player.length < 4 ? "" : "top3 player: " + this.state.top10player[3].username}
+            autoComplete="current-password"
+            />
+                      <TextField
+            read-Only
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="Username"
+          
+            value={this.state.top10player.length < 5 ? "" : "top4 player: " + this.state.top10player[4].username}
+            autoComplete="current-password"
+            />
+                      <TextField
+            read-Only
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="Username"
+      
+            value={ this.state.top10player.length < 6 ? "" : "top5 player: " + this.state.top10player[5].username}
+            autoComplete="current-password"
+            />
+                      <TextField
+            read-Only
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="Username"
+       
+            value={ this.state.top10player.length < 7 ? "" : "top6 player: " + this.state.top10player[6].username}
+            autoComplete="current-password"
+            />
+                      <TextField
+            read-Only
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="Username"
+      
+            value={ this.state.top10player.length < 8 ? "" : "top7 player: " + this.state.top10player[7].username}
+            autoComplete="current-password"
+            />
+                      <TextField
+            read-Only
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="Username"
+            
+            value={ this.state.top10player.length < 9 ? "" : "top8 player: " + this.state.top10player[8].username}
+            autoComplete="current-password"
+            />
+            <TextField
+            read-Only
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="Username"
+    
+            value={ this.state.top10player.length < 10 ? "" : "top9 player: " + this.state.top10player[9].username}
+            autoComplete="current-password"
+            />
          
           </Container>
             </React.Fragment>

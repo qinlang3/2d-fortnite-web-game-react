@@ -4,7 +4,8 @@ DROP TABLE IF EXISTS ftduser CASCADE;
 DROP TABLE IF EXISTS gamedata CASCADE;
 CREATE TABLE ftduser (
 	username VARCHAR(20) PRIMARY KEY,
-	password BYTEA NOT NULL
+	password BYTEA NOT NULL,
+	totalscore int 
 );
 
 CREATE TABLE  gamedata(

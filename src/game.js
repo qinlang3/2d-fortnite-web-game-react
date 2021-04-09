@@ -92,7 +92,7 @@ var sent = true;
 function sendtoDB(){
 	if(sent){
 		sent=false;
-		fetch('/api/authR/game', {
+		fetch('/api/updatecore', {
 			method: "PUT",
 			dataType: "JSON",
 			headers: {
@@ -537,6 +537,7 @@ class Game extends React.Component {
 							<Header app={app} title="2D Fortnite Game" sections={sections}/><NewGame game={this}/></Typography> : null}
 					{this.state.game ==='play' ?
 					<div>
+					
                     <Canvas app={app} title="2D Fortnite Game" game={this} sections={sections}/>
 					{isMobile ? <div id="control">
 						<div id="left">

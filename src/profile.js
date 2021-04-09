@@ -99,7 +99,6 @@ class ProfilePage extends React.Component {
             label="Username"
             value={this.state.username}
             autoComplete="current-password"
-            onChange={this.handleOnChangepassword}
             />
           <TextField
             variant="outlined"

@@ -16,17 +16,16 @@ class App extends React.Component {
 			username: "",
 			password: "",
 			page: "Login",
+			top10player : null
 			
 		}
 	}
-
 
 	render() {
 		const sections = [
 			{ title: 'Game'},
 			{ title: 'Search'},
 			{ title: 'Profile'},
-			{ title: 'Leaderboard'},
 			{ title: 'Logout'}
 		];
 		console.log(this.state.page);
@@ -45,9 +44,6 @@ class App extends React.Component {
 			return (
 			
 				<ProfilePage app={this} username={this.state.username} password={this.state.password} sections={sections}></ProfilePage>);
-		}else if(this.state.page === "Leaderboard"){
-			return (	
-				<Leaderboard app={this} sections={sections}></Leaderboard>);
 		}else if(this.state.page === "Search"){
 			return (
 				<SearchPage app={this} sections={sections}></SearchPage>);

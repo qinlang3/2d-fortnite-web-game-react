@@ -84,7 +84,7 @@ wss.on('connection', function(ws) {
 			// send initialization msg contains id to client
 			ws.send(JSON.stringify({"init": {"id": id}}));
 			ws.on('message', function(message) {
-				console.log("messge from client: "+message);
+				// console.log("messge from client: "+message);
 				var msg=JSON.parse(message);
 				if(msg.check){
 					return;
@@ -180,14 +180,17 @@ app.use('/api/authR', function (req, res,next) {
 		}
 		console.log(username);
 		console.log(password);
-		let sql = "INSERT INTO ftduser (username, password) VALUES ($1, sha512($2))";
-        	pool.query(sql, [username, password], (err, pgRes) => {
+		let sql = "INSERT INTO ftduser (username, password, totalscore) VALUES ($1, sha512($2), $3)";
+        	pool.query(sql, [username, password, 0], (err, pgRes) => {
   			if (err){
+				  
 				console.log(err.message);
                 res.status(409).json({ error: 'The username is already been used'});
 			} else {
+				console.log(pgRes.rows);
 				next();
         	}
+
 		});
 	} catch(err) {
                	res.status(401).json({ error: 'Not authorized'});
@@ -263,6 +266,30 @@ app.put('/api/authU/update', function (req, res) {
 });
 
 
+app.put('/api/updatecore', function (req, res,next) {
+	try {
+		if (Object.keys(req.body).length != 2 || ! "username" in req.body || ! "points" in req.body){
+			res.status(400).json({ error: 'This is a bad request'});
+			return;
+		}
+		var [username, score] = [req.body["username"], req.body["points"]];
+		console.log(username);
+		console.log(score);
+		let sql = "UPDATE ftduser SET totalscore=totalscore+$2 WHERE username=$1;";
+        	pool.query(sql, [username, score], (err, pgRes) => {
+  			if (err){
+				console.log(err.message);
+                res.status(401).json({ error: 'error'});
+			} else {
+				res.status(200).json({ success: 'update successfully'});
+        	}
+		});
+	} catch(err) {
+               	res.status(401).json({ error: 'Not authorized'});
+	}
+});
+
+
 app.post('/api/authR/register', function (req, res) {
 	res.status(200); 
 	res.json({"message":"register success"}); 
@@ -283,11 +310,32 @@ app.get('/api/view/search/:username/', function (req, res,next) {
 		pool.query(sql, [username], (err, pgRes) => {
 		if (err){
 			res.status(401).json({ error: 'Not authorized'});
+			return;
 		} else if(pgRes.rowCount == 1){
 			res.status(200).json({ no_error: 'request success'}); 
+			return;
 		} else if (pgRes.rowCount == 0){
 			res.status(404).json({ error: 'This username does not exist in our game'});
+			return;
 		}	
+		});
+	} catch(err) {
+               	res.status(401).json({ error: 'Not authorized'});
+	}
+});
+
+
+app.get('/api/view/getTop10player', function (req, res,next) {
+	try {
+		let sql = 'SELECT username, totalscore FROM ftduser ORDER BY totalscore DESC LIMIT 10';
+		pool.query(sql, [], (err, pgRes) => {
+		if (err){
+			res.status(401).json({ error: 'Not authorized'});
+			return;
+		}else{
+			res.status(200).json({ success: pgRes.rows});
+			console.log(pgRes.rows);
+		}
 		});
 	} catch(err) {
                	res.status(401).json({ error: 'Not authorized'});
@@ -322,5 +370,7 @@ app.get('/api/view/game', function (req, res) {
 	res.status(200); 
 	res.json({"message":"go to game page"}); 
 });
+
+
 
 
