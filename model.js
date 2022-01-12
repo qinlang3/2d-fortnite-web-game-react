@@ -1,3 +1,5 @@
+const { NextWeekRounded } = require("@material-ui/icons");
+
 function randint(n){ return Math.round(Math.random()*n); }
 function rand(n){ return Math.random()*n; }
 
@@ -11,7 +13,6 @@ class Stage {
 		//this.height=canvas.height;
 		//this.difficulty='easy';
 		//var enemCount=50;
-		
 		this.changed=true;
 		/*
 		if(difficulty=='meidum') this.difficulty='meidum';
@@ -26,8 +27,26 @@ class Stage {
 		if(mapSize=='small'){
 			this.mapWidth = 2000;
 			this.mapHeight = 2000;
+		}else{
+			this.mapWidth = 2000;
+			this.mapHeight = 2000;
+		}
+		this.gametime=0;
+		this.countdown=5;
+		this.circleCooling=true;
+		this.round=1;
+		this.targetCircleRadius=this.mapWidth/2*0.8;
+		var x = this.targetCircleRadius+Math.random()*(this.mapWidth-2*this.targetCircleRadius);
+		var y = this.targetCircleRadius+Math.random()*(this.mapWidth-2*this.targetCircleRadius);
+		this.targetCircleCentre=new Pair(x, y);
+		this.currCircleRadius=Math.ceil(this.mapWidth/2*Math.sqrt(2));
+		this.currCircleCentre=new Pair(this.mapWidth/2,this.mapWidth/2);
+		this.radiusChange=(this.currCircleRadius-this.targetCircleRadius)/1500;
+		this.centreChangeX=(this.targetCircleCentre.x-this.currCircleCentre.x)/1500;
+		this.centreChangeY=(this.targetCircleCentre.y-this.currCircleCentre.y)/1500;
+		setInterval(this.updateRound.bind(this), 1000);
 
-		}else if(mapSize=='medium'){
+		/*}else if(mapSize=='medium'){
 			obstaclesCount=150;
 			this.mapWidth = 5000;
 			this.mapHeight = 5000;
@@ -36,7 +55,7 @@ class Stage {
 			obstaclesCount=500;
 			this.mapWidth = 10000;
 			this.mapHeight = 10000;
-		}
+		}*/
 		while(obstaclesCount>0){
 			var x=Math.floor((Math.random()*this.mapWidth)); 
 			var y=Math.floor((Math.random()*this.mapHeight));
@@ -149,6 +168,63 @@ class Stage {
 				}
 			}
 		}*/
+	}
+	updateRound() {
+		this.gametime++;
+		this.updateHealth();
+		if(!this.circleCooling){ // circle is reducing
+			if(this.countdown==0){
+				if(this.round!=6){
+					this.countdown=5; // 60 seconds of cooling
+					this.circleCooling=true;
+					this.nextRound();
+				}
+			}else{
+				this.countdown--;
+			}
+		}else{	// circle is waiting to be reduced
+			if(this.countdown==0){
+				this.circleCooling=false;
+				this.countdown=30; // 30 seconds to reduce the circle
+			}else{
+				this.countdown--;
+			}
+
+		}
+		
+	}
+	nextRound() {
+		if(this.round!=5) {
+			this.targetCircleRadius=this.currCircleRadius/2;
+			var theta=Math.random()*2*Math.PI;
+			var r=Math.random()*this.targetCircleRadius;
+	
+			this.targetCircleCentre.x+=Math.cos(theta)*r;
+			this.targetCircleCentre.y+=Math.sin(theta)*r;
+	
+			this.radiusChange=(this.currCircleRadius-this.targetCircleRadius)/1500;
+			this.centreChangeX=(this.targetCircleCentre.x-this.currCircleCentre.x)/1500;
+			this.centreChangeY=(this.targetCircleCentre.y-this.currCircleCentre.y)/1500;
+			this.round++;
+		}else{ // final round
+			this.targetCircleCentre.x=this.currCircleCentre.x;
+			this.targetCircleCentre.y=this.currCircleCentre.y;
+			this.targetCircleRadius=0;
+			this.radiusChange=this.currCircleRadius/1500;
+			this.centreChangeX=0;
+			this.centreChangeY=0;
+			this.round++;
+		}
+	}
+	updateHealth() {
+		for(var i=0;i<this.actors.length;i++){
+			if((this.actors[i] instanceof Bot)||(this.actors[i] instanceof Player)){
+				if(this.actors[i].outsideCircle) {
+					this.actors[i].health-=10;
+					this.actors[i].beingHit=true;
+				}
+			}
+		}
 	}
 	hasChanged() {
 		return this.changed;
@@ -277,6 +353,12 @@ class Stage {
 		for(var i=0;i<this.actors.length;i++){
 			this.actors[i].step();
 		}
+		if(!this.circleCooling){
+			this.currCircleRadius-=this.radiusChange;
+			if(this.currCircleRadius<=0) this.currCircleRadius=0;
+			this.currCircleCentre.x+=this.centreChangeX;
+			this.currCircleCentre.y+=this.centreChangeY;
+		}
 		//this.updateCamera();
 	}
 	// return the first actor at coordinates (x,y) return null if there is no such actor
@@ -308,7 +390,12 @@ class Stage {
 				playerNum: this.playerNum,
 				objs: objlist,
 				players: playerlist,
-				bots: botlist
+				bots: botlist,
+				time: this.gametime,
+				countdown: this.countdown,
+				round: this.round,
+				circleCentre: this.currCircleCentre.toJSON(),
+				circleRadius: this.currCircleRadius
 			}
 		}
 	}
@@ -885,6 +972,7 @@ class Player extends Ball {
 		this.hitCD=0;
 		this.msg="None";
 		this.msgCD=0;
+		this.outsideCircle=false;
 	}
 	toJSON(){
 		return {
@@ -1047,6 +1135,12 @@ class Player extends Ball {
 	}
 	step(){
 		this.stage.updateChanged(true);
+		if(Math.sqrt((this.position.x-this.stage.currCircleCentre.x)**2+
+		(this.position.y-this.stage.currCircleCentre.y)**2)>Math.abs(this.stage.currCircleRadius-this.radius)){
+			this.outsideCircle=true;
+		}else{
+			this.outsideCircle=false;
+		}
 		if(this.health<0){
 			this.health=0;
 		}
@@ -1132,6 +1226,7 @@ class Bot extends Player {
 		this.fireCD=0;
 		this.deathCD=0;
 		this.detectRange=800;
+		this.outsideCircle=false;
 	}
 	toJSON() {
 		return {
@@ -1216,6 +1311,12 @@ class Bot extends Player {
 	}
 	step(){
 		this.stage.updateChanged(true);
+		if(Math.sqrt((this.position.x-this.stage.currCircleCentre.x)**2+
+		(this.position.y-this.stage.currCircleCentre.y)**2)>Math.abs(this.stage.currCircleRadius-this.radius)){
+			this.outsideCircle=true;
+		}else{
+			this.outsideCircle=false;
+		}
 		if(this.health<0){
 			this.health=0;
 		}

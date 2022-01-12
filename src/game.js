@@ -6,7 +6,7 @@ import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Header from './components/header';
 import { Drawer } from '@material-ui/core';
-import { drawInfo, drawObj, drawPlayer, drawBot } from './draw';
+import { drawInfo, drawObj, drawPlayer, drawBot} from './draw';
 import fist from './resources/fist.png';
 import pistol from './resources/pistol.png';
 import rifle from './resources/rifle.png';
@@ -41,6 +41,7 @@ var px, py, cameraX, cameraY;
 var player=null;
 var username;
 var paused=false;
+var time, round, countdown, circleX, circleY, circleRadius;
 
 function switchWeapon(){
 	socket.send(JSON.stringify({"gameplay": {"data": {"id": id, "type": 'switchWeapon'}}}));
@@ -144,7 +145,16 @@ function draw(){
 		for(var i=0;i<bots.length;i++){
 			drawBot(bots[i],context,getStagePositionX(), getStagePositionY());
 		}
-		drawInfo(player, playerNum, context, canvas.width, canvas.height);
+		
+	}
+    context.fillStyle='rgba(16, 43, 234, 0.7)';
+	context.beginPath(); 
+    context.rect(0, 0, canvas.width, canvas.height);
+	context.arc(Math.round(circleX+getStagePositionX()), Math.round(circleY+getStagePositionY()), circleRadius, 0, 2 * Math.PI, true); 
+	context.fill();
+	if(id!==null){
+
+		drawInfo(player, countdown, round, playerNum, context, canvas.width, canvas.height);
 	}
 }
 function update(message) {
@@ -161,6 +171,12 @@ function update(message) {
 		players=message.data.players;
 		objs=message.data.objs;
 		bots=message.data.bots;
+		time=message.data.time;
+		countdown=message.data.countdown;
+		round=message.data.round;
+		circleX=message.data.circleCentre.x;
+		circleY=message.data.circleCentre.y;
+		circleRadius=message.data.circleRadius;
 		draw();
 	}
 }

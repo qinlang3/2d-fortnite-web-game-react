@@ -112,7 +112,7 @@ wss.on('connection', function(ws) {
 			if(msg.init){
 				console.log("trying");
 				stage=new Stage(msg.init.map, msg.init.aiNum);
-				interval=setInterval(function(){ stage.step(); broadcast(); },20);
+				interval=setInterval(function(){ stage.step(); broadcast();},20);
 				for(var i=0;i<50;++i) clients[i]=0;
 				ws.send(JSON.stringify({'response': "yes"}));
 				newGame=false;

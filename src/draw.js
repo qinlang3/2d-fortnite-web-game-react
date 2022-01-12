@@ -1,4 +1,4 @@
-export function drawInfo(player, playerNum, context, width, height){
+export function drawInfo(player, countdown, round, playerNum, context, width, height){
     context.fillStyle = 'rgba(0,0,0,1)';
 	context.font='bold 22px Arial';
     var x=width;
@@ -30,6 +30,8 @@ export function drawInfo(player, playerNum, context, width, height){
     }
     context.fillText('Killed: '+player.points, width*0.015,  y-height*0.034);
     context.fillText('Remaining: '+playerNum, width*0.015,  y+height*0.015);
+    context.fillText('Time Remaining for next Round: '+countdown, width*0.015,  y+height*0.05);
+    context.fillText('Round '+round, width*0.015,  y+height*0.1);
     context.fillText('Health:', x-width*0.04, y-height*0.032);
     var len=Math.round(wx*0.8*(player.health/100));
     context.fillStyle='rgba(228,65,65,1)';
@@ -435,3 +437,4 @@ export function drawPlayer(id, val, context, basex, basey){
         context.strokeStyle='#000000';
     }
 }
+
